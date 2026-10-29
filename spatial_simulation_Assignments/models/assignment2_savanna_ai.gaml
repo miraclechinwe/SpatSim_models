@@ -1,6 +1,6 @@
 /**
 * Name: savanna_ai
-* Savannah model (see docs/assignment2/SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive. Feature 7: number of zebras and lions as parameters. Feature 8: zebras eat grass.
+* Savannah model (see docs/assignment2/SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive. Feature 7: number of zebras and lions as parameters. Feature 8: zebras eat grass. Feature 9: lions have energy and starve.
 */
 
 model savanna_ai
@@ -48,20 +48,33 @@ species zebra skills: [moving] {
 	}
 }
 
-/* Lion: a predator that walks randomly around the savannah and kills nearby zebras.
+/* Lion: a predator that walks randomly around the savannah, kills and eats nearby zebras,
+ * and dies when its energy runs out.
  * Its position is the built-in attribute 'location'. */
 species lion skills: [moving] {
 
-	/* Reflex move: every step the lion walks in a random direction. */
+	/* Energy: the lion's energy level; starts at 10, the lion dies when it reaches 0. */
+	float energy <- 10.0;
+
+	/* Reflex move: every step the lion walks in a random direction and loses 0.1 energy. */
 	reflex move {
 		do wander;
+		energy <- energy - 0.1;
 	}
 
-	/* Reflex hunt: every step the lion kills every zebra within 3 m of it. */
+	/* Reflex hunt: every step the lion kills and eats every zebra within 3 m of it,
+	 * gaining 5 energy for each. */
 	reflex hunt {
-		ask zebra at_distance 3 {
+		list<zebra> prey <- zebra at_distance 3;
+		energy <- energy + 5 * length(prey);
+		ask prey {
 			do die;
 		}
+	}
+
+	/* Reflex starve: the lion dies when its energy reaches 0. */
+	reflex starve when: energy <= 0 {
+		do die;
 	}
 
 	/* Aspect base: draws the lion as an orange circle of size 3 with a black border. */
