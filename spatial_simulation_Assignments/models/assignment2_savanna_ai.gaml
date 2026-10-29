@@ -1,6 +1,6 @@
 /**
 * Name: savanna_ai
-* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500.
+* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive.
 */
 
 model savanna_ai
@@ -75,15 +75,23 @@ grid grassland width: 50 height: 50 {
 	}
 }
 
-/* GUI experiment: runs the model with a map display. */
+/* GUI experiment: runs the model with a map display and a zebra chart. */
 experiment savanna_gui type: gui {
 
-	/* Outputs: one display showing the grass, the zebras and the lions. */
+	/* Outputs: two displays: a map of the grass, the zebras and the lions, and a line chart of zebras alive. */
 	output {
 		display map {
 			grid grassland;
 			species zebra aspect: base;
 			species lion aspect: base;
+		}
+
+		/* Display zebra_chart: line chart of the number of zebras alive at each step. */
+		display zebra_chart {
+			chart "Zebras alive over time" type: series x_label: "Time (steps, 1 step = 1 hour)" y_label: "Number of zebras" {
+				/* Data series: the number of zebra agents still alive. */
+				data "Zebras alive" value: length(zebra);
+			}
 		}
 	}
 }
