@@ -14,3 +14,4 @@ Prompt 4: grassland. Claude noticed that the spec has no maximum biomass, so the
 10. Step 3 – Compare: I compared both versions line by line (see COMPARE.md). I found a semantic error from the AI: the chart label claimed "1 step = 1 hour", but the time step was never set. I asked Claude to fix it, plus the zebra border and an outdated comment.
 11. Step 4 – Extension 1: zebras eat 1 kg of grass per step from their cell. Tested: sandy patches appear where zebras walk. Committed.
 12. Step 4 – Extension 2: lion energy (start 10, -0.1 per step, +5 per zebra, dies at 0). Claude predicted most lions would starve between step 100 and 200; tested: at step 182 only 1 lion was left and 14 zebras survived. Committed.
+13. Step 4 – Extension 3: chart with zebras (grey) and lions (orange), display renamed to population_chart. Result: all lions that never ate starved at exactly step 100 (20 -> 11). Committed and tagged v0.2.

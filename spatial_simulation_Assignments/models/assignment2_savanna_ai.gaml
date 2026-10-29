@@ -1,6 +1,6 @@
 /**
 * Name: savanna_ai
-* Savannah model (see docs/assignment2/SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive. Feature 7: number of zebras and lions as parameters. Feature 8: zebras eat grass. Feature 9: lions have energy and starve.
+* Savannah model (see docs/assignment2/SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive. Feature 7: number of zebras and lions as parameters. Feature 8: zebras eat grass. Feature 9: lions have energy and starve. Feature 10: chart shows zebras and lions alive.
 */
 
 model savanna_ai
@@ -101,14 +101,14 @@ grid grassland width: 50 height: 50 {
 	}
 }
 
-/* GUI experiment: runs the model with parameters for the number of zebras and lions, a map display and a zebra chart. */
+/* GUI experiment: runs the model with parameters for the number of zebras and lions, a map display and a chart of zebras and lions. */
 experiment savanna_gui type: gui {
 
 	/* Parameters: the user can change the number of zebras and lions before a run. */
 	parameter "Number of zebras" var: nb_zebras_init min: 0 max: 200;
 	parameter "Number of lions" var: nb_lions_init min: 0 max: 200;
 
-	/* Outputs: two displays: a map of the grass, the zebras and the lions, and a line chart of zebras alive. */
+	/* Outputs: two displays: a map of the grass, the zebras and the lions, and a line chart of zebras and lions alive. */
 	output {
 		display map {
 			grid grassland;
@@ -116,11 +116,13 @@ experiment savanna_gui type: gui {
 			species lion aspect: base;
 		}
 
-		/* Display zebra_chart: line chart of the number of zebras alive at each step. */
-		display zebra_chart {
-			chart "Zebras alive over time" type: series x_label: "Time (steps)" y_label: "Number of zebras" {
-				/* Data series: the number of zebra agents still alive. */
-				data "Zebras alive" value: length(zebra);
+		/* Display population_chart: line chart of the number of zebras and lions alive at each step. */
+		display population_chart {
+			chart "Zebras and lions alive over time" type: series x_label: "Time (steps)" y_label: "Number of animals" {
+				/* Data series: the number of zebra agents still alive (grey, like on the map). */
+				data "Zebras alive" value: length(zebra) color: #grey;
+				/* Data series: the number of lion agents still alive (orange, like on the map). */
+				data "Lions alive" value: length(lion) color: #orange;
 			}
 		}
 	}
