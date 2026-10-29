@@ -1,17 +1,22 @@
 /**
 * Name: savanna_ai
-* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive.
+* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive. Feature 7: number of zebras and lions as parameters.
 */
 
 model savanna_ai
 
-/* Global section: sets up the world, creates the initial agents and pauses the simulation at step 500. */
+/* Global section: holds the start parameters, sets up the world, creates the initial agents and pauses the simulation at step 500. */
 global {
 
-	/* Initialisation: creates 20 zebras and 20 lions at random positions. */
+	/* Number of zebras created at the start (can be changed as a parameter). */
+	int nb_zebras_init <- 20;
+	/* Number of lions created at the start (can be changed as a parameter). */
+	int nb_lions_init <- 20;
+
+	/* Initialisation: creates nb_zebras_init zebras and nb_lions_init lions at random positions. */
 	init {
-		create zebra number: 20;
-		create lion number: 20;
+		create zebra number: nb_zebras_init;
+		create lion number: nb_lions_init;
 	}
 
 	/* Reflex stop_at_500: pauses the simulation when it reaches step 500. */
@@ -75,8 +80,12 @@ grid grassland width: 50 height: 50 {
 	}
 }
 
-/* GUI experiment: runs the model with a map display and a zebra chart. */
+/* GUI experiment: runs the model with parameters for the number of zebras and lions, a map display and a zebra chart. */
 experiment savanna_gui type: gui {
+
+	/* Parameters: the user can change the number of zebras and lions before a run. */
+	parameter "Number of zebras" var: nb_zebras_init min: 0 max: 200;
+	parameter "Number of lions" var: nb_lions_init min: 0 max: 200;
 
 	/* Outputs: two displays: a map of the grass, the zebras and the lions, and a line chart of zebras alive. */
 	output {
