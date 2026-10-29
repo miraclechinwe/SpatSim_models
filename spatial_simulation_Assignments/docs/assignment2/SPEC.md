@@ -70,6 +70,16 @@ Zebra
 
 
 
+## Extension (step 4)
+
+- Zebras eat grass: every step, each zebra eats 1 kg of biomass from the cell it stands on (or what is left if less than 1 kg)
+
+- Lions have energy: start with 10, lose 0.1 per step (moving), gain 5 per zebra eaten, die when energy reaches 0
+
+- Chart: also show the number of lions alive
+
+
+
 ## Extras (bonus, added after v0.1)
 
 - Lions and zebras are drawn as simple animal symbols

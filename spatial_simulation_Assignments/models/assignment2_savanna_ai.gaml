@@ -1,6 +1,6 @@
 /**
 * Name: savanna_ai
-* Savannah model (see docs/assignment2/SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive. Feature 7: number of zebras and lions as parameters.
+* Savannah model (see docs/assignment2/SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500. Feature 6: line chart of zebras alive. Feature 7: number of zebras and lions as parameters. Feature 8: zebras eat grass.
 */
 
 model savanna_ai
@@ -25,13 +25,21 @@ global {
 	}
 }
 
-/* Zebra: a grazing animal that walks randomly around the savannah.
+/* Zebra: a grazing animal that walks randomly around the savannah and eats grass.
  * Its position is the built-in attribute 'location'. */
 species zebra skills: [moving] {
 
 	/* Reflex move: every step the zebra walks in a random direction. */
 	reflex move {
 		do wander;
+	}
+
+	/* Reflex eat: every step the zebra eats 1 kg of grass from the cell it stands on,
+	 * or what is left if the cell has less than 1 kg. */
+	reflex eat {
+		ask grassland(location) {
+			biomass <- max(0.0, biomass - 1.0);
+		}
 	}
 
 	/* Aspect base: draws the zebra as a grey triangle of size 2 with a black border. */
