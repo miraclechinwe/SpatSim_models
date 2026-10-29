@@ -11,3 +11,4 @@ Prompt 4: grassland. Claude noticed that the spec has no maximum biomass, so the
 6. Prompt 4: grassland (50 x 50, biomass 0-10 kg, +0.1 kg per step). Claude noticed the spec has no maximum biomass, so the map would turn green in about 100 steps. I chose full green at 20 kg (as in my Assignment 1), no cap. Tested: works, but grey zebras are hard to see on green. Committed.
 8. Prompt 6: zebra line chart (second display, title and axis labels). Tested: line drops in steps from 20 as lions catch zebras by chance. Committed.
 9. Prompt 7: parameters for the number of lions and zebras (sliders with limits). Tested with 51 zebras: the chart starts at 51. Committed and tagged v0.1.
+10. Step 3 – Compare: I compared both versions line by line (see COMPARE.md). I found a semantic error from the AI: the chart label claimed "1 step = 1 hour", but the time step was never set. I asked Claude to fix it, plus the zebra border and an outdated comment.
