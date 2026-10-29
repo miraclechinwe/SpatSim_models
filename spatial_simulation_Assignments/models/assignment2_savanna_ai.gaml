@@ -1,17 +1,22 @@
 /**
 * Name: savanna_ai
-* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass.
+* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m. Feature 4: grass grid with growing biomass. Feature 5: pauses automatically at step 500.
 */
 
 model savanna_ai
 
-/* Global section: sets up the world and creates the initial agents. */
+/* Global section: sets up the world, creates the initial agents and pauses the simulation at step 500. */
 global {
 
 	/* Initialisation: creates 20 zebras and 20 lions at random positions. */
 	init {
 		create zebra number: 20;
 		create lion number: 20;
+	}
+
+	/* Reflex stop_at_500: pauses the simulation when it reaches step 500. */
+	reflex stop_at_500 when: cycle = 500 {
+		do pause;
 	}
 }
 
