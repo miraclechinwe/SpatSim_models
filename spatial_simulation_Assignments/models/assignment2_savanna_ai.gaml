@@ -1,6 +1,6 @@
 /**
 * Name: savanna_ai
-* Savannah model (see SPEC.md). Feature 1: zebras walking randomly.
+* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly.
 */
 
 model savanna_ai
@@ -8,9 +8,10 @@ model savanna_ai
 /* Global section: sets up the world and creates the initial agents. */
 global {
 
-	/* Initialisation: creates 20 zebras at random positions. */
+	/* Initialisation: creates 20 zebras and 20 lions at random positions. */
 	init {
 		create zebra number: 20;
+		create lion number: 20;
 	}
 }
 
@@ -29,13 +30,29 @@ species zebra skills: [moving] {
 	}
 }
 
+/* Lion: a predator that walks randomly around the savannah (no hunting yet).
+ * Its position is the built-in attribute 'location'. */
+species lion skills: [moving] {
+
+	/* Reflex move: every step the lion walks in a random direction. */
+	reflex move {
+		do wander;
+	}
+
+	/* Aspect base: draws the lion as an orange circle of size 3 with a black border. */
+	aspect base {
+		draw circle(3) color: #orange border: #black;
+	}
+}
+
 /* GUI experiment: runs the model with a map display. */
 experiment savanna_gui type: gui {
 
-	/* Outputs: one display showing the zebras. */
+	/* Outputs: one display showing the zebras and the lions. */
 	output {
 		display map {
 			species zebra aspect: base;
+			species lion aspect: base;
 		}
 	}
 }
