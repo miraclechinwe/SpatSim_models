@@ -1,6 +1,6 @@
 /**
 * Name: savanna_ai
-* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly.
+* Savannah model (see SPEC.md). Feature 1: zebras walking randomly. Feature 2: lions walking randomly. Feature 3: lions kill zebras within 3 m.
 */
 
 model savanna_ai
@@ -30,13 +30,20 @@ species zebra skills: [moving] {
 	}
 }
 
-/* Lion: a predator that walks randomly around the savannah (no hunting yet).
+/* Lion: a predator that walks randomly around the savannah and kills nearby zebras.
  * Its position is the built-in attribute 'location'. */
 species lion skills: [moving] {
 
 	/* Reflex move: every step the lion walks in a random direction. */
 	reflex move {
 		do wander;
+	}
+
+	/* Reflex hunt: every step the lion kills every zebra within 3 m of it. */
+	reflex hunt {
+		ask zebra at_distance 3 {
+			do die;
+		}
 	}
 
 	/* Aspect base: draws the lion as an orange circle of size 3 with a black border. */
