@@ -1,7 +1,8 @@
 /**
 * Name: assignment3_lion_demography
-* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 0.4: report and colour
-* (Savannah base, lion age and age_list, plus console age report, lion age chart and lion colour from the mean age).
+* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 0.5: death and birth
+* (Savannah base, lion age and age_list, console age report, lion age chart, lion colour from the mean age,
+* plus old lions replaced by baby lions).
 */
 
 model assignment3_lion_demography
@@ -50,7 +51,7 @@ global {
 }
 
 /* Lion: a predator that walks randomly, gets older and kills every zebra within 3 m.
- * Its position is the built-in attribute 'location'. Later: replacement by a baby lion. */
+ * Its position is the built-in attribute 'location'. When older than 60 it is replaced by a baby lion. */
 species lion skills: [moving] {
 
 	/* Age: the lion's age in whole years, random start value between 0 and 60. */
@@ -72,6 +73,13 @@ species lion skills: [moving] {
 		ask zebra at_distance 3 {
 			do die;
 		}
+	}
+
+	/* Reflex replace: when the lion is older than 60, first a baby lion (age 0) is born
+	 * at the same location, then the old lion dies. */
+	reflex replace when: age > 60 {
+		create lion with: [age::0, location::location];
+		do die;
 	}
 
 	/* Aspect base: draws the lion as a circle of size 3 with a black border,
