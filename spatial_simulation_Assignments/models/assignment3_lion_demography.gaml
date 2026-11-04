@@ -1,13 +1,13 @@
 /**
 * Name: assignment3_lion_demography
-* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 0.3b: age and list (age as a whole number)
-* (Savannah base, plus lion age and age_list).
+* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 0.4: report and colour
+* (Savannah base, lion age and age_list, plus console age report, lion age chart and lion colour from the mean age).
 */
 
 model assignment3_lion_demography
 
-/* Global section: holds the parameters and age_list, creates the initial lions and zebras, keeps age_list
- * up to date and pauses the simulation at step 500. Later: the age report and the lion colour from the mean age. */
+/* Global section: holds the parameters, age_list and lion_colour, creates the initial lions and zebras,
+ * keeps age_list up to date, writes the age report, sets the lion colour and pauses the simulation at step 500. */
 global {
 
 	/* Number of lions created at the start (can be changed as a parameter). */
@@ -16,6 +16,8 @@ global {
 	int nb_zebras_init <- 20;
 	/* Age list: the current age of every lion in whole years; starts empty. */
 	list<int> age_list <- [];
+	/* Lion colour: red shade from the mean lion age; starts light red. */
+	rgb lion_colour <- rgb(255, 150, 150);
 
 	/* Initialisation: creates nb_lions_init lions and nb_zebras_init zebras at random positions,
 	 * then puts the age of every lion into age_list. */
@@ -29,6 +31,16 @@ global {
 	 * Runs before the lions age in the same step, so the list is one step behind. */
 	reflex update_age_list {
 		age_list <- lion collect each.age;
+	}
+
+	/* Reflex report: if there are lions, writes the number, min, mean and max age to the console
+	 * and sets lion_colour from the mean age (light red at 0, dark red at 60 or more). */
+	reflex report when: !empty(age_list) {
+		float m <- mean(age_list);
+		write "Step " + cycle + ": " + length(age_list) + " lions, min " + min(age_list)
+			+ ", mean " + (m with_precision 1) + ", max " + max(age_list);
+		float t <- min(1.0, m / 60);
+		lion_colour <- rgb(int(255 - 135 * t), int(150 - 150 * t), int(150 - 150 * t));
 	}
 
 	/* Reflex stop_at_500: pauses the simulation when it reaches step 500. */
@@ -62,10 +74,10 @@ species lion skills: [moving] {
 		}
 	}
 
-	/* Aspect base: draws the lion as a red circle of size 3 with a black border.
-	 * Later: the red shade will come from the mean age. */
+	/* Aspect base: draws the lion as a circle of size 3 with a black border,
+	 * in lion_colour (red shade from the mean lion age). */
 	aspect base {
-		draw circle(3) color: #red border: #black;
+		draw circle(3) color: lion_colour border: #black;
 	}
 }
 
@@ -111,14 +123,14 @@ grid grassland width: 50 height: 50 {
 }
 
 /* GUI experiment: runs the model with parameters for the number of lions and zebras,
- * a map display and a chart of lions and zebras over time. Later: the chart of min/mean/max lion age. */
+ * a map display, a chart of lions and zebras over time and a chart of min/mean/max lion age. */
 experiment lion_demography_gui type: gui {
 
 	/* Parameters: the user can change the number of lions and zebras before a run (sliders 0-100). */
 	parameter "Number of lions" var: nb_lions_init min: 0 max: 100;
 	parameter "Number of zebras" var: nb_zebras_init min: 0 max: 100;
 
-	/* Outputs: a map display and a population chart display. */
+	/* Outputs: a map display, a population chart display and a lion age chart display. */
 	output {
 		/* Display map: the grass grid with the zebras and lions on top. */
 		display map {
@@ -134,6 +146,18 @@ experiment lion_demography_gui type: gui {
 				data "Lions alive" value: length(lion) color: #red;
 				/* Data series: number of zebra agents alive (grey, like on the map). */
 				data "Zebras alive" value: length(zebra) color: #grey;
+			}
+		}
+
+		/* Display "Lion ages": min, mean and max lion age at each step (0 if there are no lions). */
+		display "Lion ages" {
+			chart "Lion ages" type: series x_label: "Time (steps)" y_label: "Age (years)" {
+				/* Data series: youngest lion age. */
+				data "Min age" value: empty(age_list) ? 0 : min(age_list) color: #orange;
+				/* Data series: mean lion age. */
+				data "Mean age" value: empty(age_list) ? 0 : mean(age_list) color: #red;
+				/* Data series: oldest lion age. */
+				data "Max age" value: empty(age_list) ? 0 : max(age_list) color: #darkred;
 			}
 		}
 	}
