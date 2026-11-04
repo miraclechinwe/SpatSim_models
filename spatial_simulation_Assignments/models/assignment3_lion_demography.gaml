@@ -1,6 +1,6 @@
 /**
 * Name: assignment3_lion_demography
-* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 0.5: death and birth
+* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 1.0: final model (all six bullets)
 * (Savannah base, lion age and age_list, console age report, lion age chart, lion colour from the mean age,
 * plus old lions replaced by baby lions).
 */
