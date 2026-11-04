@@ -1,25 +1,34 @@
 /**
 * Name: assignment3_lion_demography
-* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 0.2: Savannah base
-* (lions and zebras walk, lions kill zebras, zebras eat grass, grass grows, population chart).
+* Lion demography in the Savannah (see docs/assignment3/DESIGN.md). Version 0.3b: age and list (age as a whole number)
+* (Savannah base, plus lion age and age_list).
 */
 
 model assignment3_lion_demography
 
-/* Global section: holds the start parameters, creates the initial lions and zebras and pauses
- * the simulation at step 500. Later: ageing speed, age_list, the age report and the lion colour from the mean age. */
+/* Global section: holds the parameters and age_list, creates the initial lions and zebras, keeps age_list
+ * up to date and pauses the simulation at step 500. Later: the age report and the lion colour from the mean age. */
 global {
 
 	/* Number of lions created at the start (can be changed as a parameter). */
 	int nb_lions_init <- 20;
 	/* Number of zebras created at the start (can be changed as a parameter). */
 	int nb_zebras_init <- 20;
+	/* Age list: the current age of every lion in whole years; starts empty. */
+	list<int> age_list <- [];
 
-	/* Initialisation: creates nb_lions_init lions and nb_zebras_init zebras at random positions.
-	 * Later: also fills age_list with the lions' ages. */
+	/* Initialisation: creates nb_lions_init lions and nb_zebras_init zebras at random positions,
+	 * then puts the age of every lion into age_list. */
 	init {
 		create lion number: nb_lions_init;
+		age_list <- lion collect each.age;
 		create zebra number: nb_zebras_init;
+	}
+
+	/* Reflex update_age_list: every step replaces the old values in age_list with the current age of every lion.
+	 * Runs before the lions age in the same step, so the list is one step behind. */
+	reflex update_age_list {
+		age_list <- lion collect each.age;
 	}
 
 	/* Reflex stop_at_500: pauses the simulation when it reaches step 500. */
@@ -28,9 +37,17 @@ global {
 	}
 }
 
-/* Lion: a predator that walks randomly and kills every zebra within 3 m.
- * Its position is the built-in attribute 'location'. Later: age, ageing and replacement by a baby lion. */
+/* Lion: a predator that walks randomly, gets older and kills every zebra within 3 m.
+ * Its position is the built-in attribute 'location'. Later: replacement by a baby lion. */
 species lion skills: [moving] {
+
+	/* Age: the lion's age in whole years, random start value between 0 and 60. */
+	int age <- rnd(60);
+
+	/* Reflex grow_older: every step the lion gets 1 year older. */
+	reflex grow_older {
+		age <- age + 1;
+	}
 
 	/* Reflex move: every step the lion walks in a random direction. */
 	reflex move {

@@ -7,7 +7,7 @@ How does the age of a lion population change over time when old lions die and ar
 - global (the world), species lion, species zebra, grid grassland (grass)
 
 ## Global
-- Parameters: number of lions (20), number of zebras (20), ageing speed in years per step (1.0)
+- Parameters: number of lions (20), number of zebras (20)
 - age_list: a list with the current age of every lion
 - At the start: create lions and zebras, then add every lion's age to age_list
 - Every step: remove the old values from age_list and add the current ages
@@ -16,8 +16,8 @@ How does the age of a lion population change over time when old lions die and ar
 - Pause after 500 steps
 
 ## Lion
-- age in years, random start between 0 and 60
-- every step: walks randomly, gets older by the ageing speed, kills zebras within 3 m
+- age in whole years (int), random start between 0 and 60
+- every step: walks randomly, gets 1 year older, kills zebras within 3 m
 - if age > 60: first a baby lion (age 0) is born at the same place, then the old lion dies
 - drawn as circle(3) with black border in the red shade
 
