@@ -5,11 +5,12 @@
 
 model assignment4_movement
 
-/* Global section: creates 5 cows in init (sheep and goats will be added later). */
+/* Global section: creates 5 cows and 3 sheep in init (goats will be added later). */
 global {
 	/* Init: runs once at the start and creates the agents. */
 	init {
 		create cow number: 5;
+		create sheep number: 3;
 	}
 }
 
@@ -26,8 +27,17 @@ species cow skills: [moving] {
 	}
 }
 
-/* Sheep species: will move towards the south with move (speed 1, heading 90) and draw its line neighbourhood. */
+/* Sheep species: moves straight towards the south with move (speed 1, heading 90) and draws its line neighbourhood. */
 species sheep skills: [moving] {
+	/* Reflex move: every step the sheep moves 1 m towards the south (heading 90, because east = 0). */
+	reflex move {
+		do move heading: 90.0 speed: 1.0;
+	}
+	/* Aspect base: the sheep as a black filled circle and its action neighbourhood as a black line 1 m (= its speed) towards the south. */
+	aspect base {
+		draw circle(1) color: #black;
+		draw line([location, location + {0, 1}]) color: #black;
+	}
 }
 
 /* Goat species: will walk towards {0,0} with goto (speed 0.5) and draw its line to the origin. */
@@ -39,6 +49,7 @@ experiment main type: gui {
 	output {
 		display map {
 			species cow aspect: base;
+			species sheep aspect: base;
 		}
 	}
 }
