@@ -5,14 +5,25 @@
 
 model assignment4_movement
 
-/* Global section: will create 5 cows, 3 sheep and 2 goats in init. */
+/* Global section: creates 5 cows in init (sheep and goats will be added later). */
 global {
+	/* Init: runs once at the start and creates the agents. */
 	init {
+		create cow number: 5;
 	}
 }
 
-/* Cow species: will do a correlated random walk with wander (speed 2, amplitude 90) and draw its circle neighbourhood. */
+/* Cow species: does a correlated random walk with wander (speed 2, amplitude 90) and draws its circle neighbourhood. */
 species cow skills: [moving] {
+	/* Reflex move: every step the cow wanders with speed 2 and turns at most 90 degrees from its current heading. */
+	reflex move {
+		do wander speed: 2.0 amplitude: 90.0;
+	}
+	/* Aspect base: the cow as a brown filled circle and its action neighbourhood as a brown outline circle with radius 2 (= its speed). */
+	aspect base {
+		draw circle(1) color: #brown;
+		draw circle(2) color: #brown wireframe: true;
+	}
 }
 
 /* Sheep species: will move towards the south with move (speed 1, heading 90) and draw its line neighbourhood. */
@@ -27,6 +38,7 @@ species goat skills: [moving] {
 experiment main type: gui {
 	output {
 		display map {
+			species cow aspect: base;
 		}
 	}
 }
