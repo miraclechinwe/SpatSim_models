@@ -1,6 +1,6 @@
 /**
 * Name: assignment4_movement
-* Movement actions and action neighbourhood (see docs/assignment4/Design.md). Version 2.2: world, cows and sheep.
+* Movement actions and action neighbourhood (see docs/assignment4/Design.md). Version 2.3: world, cows, sheep and goats.
 */
 
 model assignment4_movement
@@ -9,10 +9,11 @@ model assignment4_movement
 global {
 	/* Shape: the world is a 30 x 30 m field. */
 	geometry shape <- square(30);
-	/* Init: runs once at the start and creates 5 cows and 3 sheep. */
+	/* Init: runs once at the start and creates 5 cows, 3 sheep and 2 goats. */
 	init {
 		create cow number: 5;
 		create sheep number: 3;
+		create goat number: 2;
 	}
 }
 
@@ -72,8 +73,31 @@ species sheep skills: [moving] {
 	}
 }
 
-/* Goat species: will walk towards the origin with goto. */
+/* Goat species: walks slowly to the origin with goto and shows its next step on the way. */
 species goat skills: [moving] {
+	/* Speed: 0.5 m per step, also the radius that cuts the line to the origin. */
+	float speed <- 0.5;
+	/* Action area: where the goat can be in the next step. */
+	geometry action_area;
+
+	/* Reflex walk: moves at its speed straight towards the origin {0, 0}. */
+	reflex walk {
+		do goto target: {0, 0} speed: speed;
+	}
+	/* Reflex update_area: after walk, the part of the line to the origin within one step. */
+	reflex update_area {
+		action_area <- line([location, {0, 0}]) intersection circle(speed);
+	}
+	/* Aspect default: the goat as a small yellow filled circle. */
+	aspect default {
+		draw circle(0.5) color: #yellow;
+	}
+	/* Aspect area: the action area line, thickened by 0.3 m, in goldenrod. */
+	aspect area {
+		if (action_area != nil) {
+			draw action_area + 0.3 color: #goldenrod;
+		}
+	}
 }
 
 /* GUI experiment: will show one map display with all agents and their action neighbourhoods. */
@@ -85,6 +109,8 @@ experiment main type: gui {
 			species cow aspect: default;
 			species sheep aspect: area transparency: 0.5;
 			species sheep aspect: default;
+			species goat aspect: area transparency: 0.5;
+			species goat aspect: default;
 		}
 	}
 }
