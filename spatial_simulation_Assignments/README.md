@@ -9,3 +9,5 @@ Files are named by assignment number.
 - **Assignment 3** – `models/assignment3_lion_demography.gaml`: lion demography model (ages in a list, report, red colour, death and birth).
   `models/assignment3_gemini_comparison.gaml`: Gemini one-prompt model, for comparison only.
   The design (`DESIGN.md`) and prompt log (`PROMPT_LOG.md`) are in `docs/assignment3/`.
+- **Assignment 4** – `models/assignment4_movement.gaml`: cows (correlated random walk), sheep (move south) and goats (goto origin) with their action neighbourhoods.
+  The design (`Design.md`) and prompt log (`PROMPT_LOG.md`) are in `docs/assignment4/`.
