@@ -19,7 +19,7 @@ Show the three movement actions of the moving skill (wander, move, goto) and vis
 - Goat: line from its location to {0,0} intersection circle(speed), one step towards the origin; nothing is drawn once it has arrived
 
 ## Visualisation
-- Each species has two aspects: default (the animal as a small circle in its colour) and area (its action neighbourhood in goldenrod; lines drawn 0.3 m thick so they are visible)
+- Each species has two aspects: default (the animal as a small circle in its colour) and area (its action neighbourhood in goldenrod; lines buffered by 0.3 m on each side (about 0.6 m wide) so they are visible)
 - The display draws the area aspect first with transparency 0.5, then the default aspect on top
 
 ## Output

@@ -1,6 +1,6 @@
 /**
 * Name: assignment4_movement
-* Movement actions and action neighbourhood (see docs/assignment4/Design.md). Version 2.1: world and cows.
+* Movement actions and action neighbourhood (see docs/assignment4/Design.md). Version 2.2: world, cows and sheep.
 */
 
 model assignment4_movement
@@ -9,9 +9,10 @@ model assignment4_movement
 global {
 	/* Shape: the world is a 30 x 30 m field. */
 	geometry shape <- square(30);
-	/* Init: runs once at the start and creates 5 cows. */
+	/* Init: runs once at the start and creates 5 cows and 3 sheep. */
 	init {
 		create cow number: 5;
+		create sheep number: 3;
 	}
 }
 
@@ -42,8 +43,33 @@ species cow skills: [moving] {
 	}
 }
 
-/* Sheep species: will move towards the south with move. */
+/* Sheep species: walks south with move and shows a line one step ahead. */
 species sheep skills: [moving] {
+	/* Speed: 1 m per step, also the length of the action area line. */
+	float speed <- 1.0;
+	/* Heading: 90 degrees, which is south (east = 0). */
+	float heading <- 90.0;
+	/* Action area: where the sheep can be in the next step. */
+	geometry action_area;
+
+	/* Reflex walk: moves one step along its heading at its speed. */
+	reflex walk {
+		do move;
+	}
+	/* Reflex update_area: after walk, the line from the sheep to one step south. */
+	reflex update_area {
+		action_area <- line([location, location + {0, speed}]);
+	}
+	/* Aspect default: the sheep as a small black filled circle. */
+	aspect default {
+		draw circle(0.5) color: #black;
+	}
+	/* Aspect area: the action area line, thickened by 0.3 m, in goldenrod. */
+	aspect area {
+		if (action_area != nil) {
+			draw action_area + 0.3 color: #goldenrod;
+		}
+	}
 }
 
 /* Goat species: will walk towards the origin with goto. */
@@ -57,6 +83,8 @@ experiment main type: gui {
 		display map background: #lightgreen {
 			species cow aspect: area transparency: 0.5;
 			species cow aspect: default;
+			species sheep aspect: area transparency: 0.5;
+			species sheep aspect: default;
 		}
 	}
 }
