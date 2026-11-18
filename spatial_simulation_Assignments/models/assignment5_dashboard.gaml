@@ -1,6 +1,6 @@
 /**
 * Name: assignment5_dashboard
-* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3)
+* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.1: total_distance for every animal.
 */
 
 model assignment5_dashboard
@@ -23,10 +23,14 @@ species cow skills: [moving] {
 	float speed <- 2.0;
 	/* Action area: where the cow can be in the next step. */
 	geometry action_area;
+	/* Total distance: metres travelled since the start, the sum of all step lengths. */
+	float total_distance <- 0.0;
 
-	/* Reflex walk: wanders at its speed, turning at most 90 degrees from its heading. */
+	/* Reflex walk: wanders at its speed, turning at most 90 degrees from its heading, then adds the length of this step to total_distance. */
 	reflex walk {
+		point old_location <- location;
 		do wander amplitude: 90.0 speed: speed;
+		total_distance <- total_distance + (old_location distance_to location);
 	}
 	/* Reflex update_area: after walk, the 90 degree slice of circle(speed) around the heading. */
 	reflex update_area {
@@ -52,10 +56,14 @@ species sheep skills: [moving] {
 	float heading <- 90.0;
 	/* Action area: where the sheep can be in the next step. */
 	geometry action_area;
+	/* Total distance: metres travelled since the start, the sum of all step lengths. */
+	float total_distance <- 0.0;
 
-	/* Reflex walk: moves one step along its heading at its speed. */
+	/* Reflex walk: moves one step along its heading at its speed, then adds the length of this step to total_distance. */
 	reflex walk {
+		point old_location <- location;
 		do move;
+		total_distance <- total_distance + (old_location distance_to location);
 	}
 	/* Reflex update_area: after walk, the line from the sheep to one step south. */
 	reflex update_area {
@@ -79,10 +87,14 @@ species goat skills: [moving] {
 	float speed <- 0.5;
 	/* Action area: where the goat can be in the next step. */
 	geometry action_area;
+	/* Total distance: metres travelled since the start, the sum of all step lengths. */
+	float total_distance <- 0.0;
 
-	/* Reflex walk: moves at its speed straight towards the origin {0, 0}. */
+	/* Reflex walk: moves at its speed straight towards the origin {0, 0}, then adds the length of this step to total_distance. */
 	reflex walk {
+		point old_location <- location;
 		do goto target: {0, 0} speed: speed;
+		total_distance <- total_distance + (old_location distance_to location);
 	}
 	/* Reflex update_area: after walk, the part of the line to the origin within one step. */
 	reflex update_area {
