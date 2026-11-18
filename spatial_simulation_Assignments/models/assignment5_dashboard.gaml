@@ -1,6 +1,6 @@
 /**
 * Name: assignment5_dashboard
-* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.3: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global.
+* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.4: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global, sheep stop in the south, monitors for sheep in the south and goats at the origin.
 */
 
 model assignment5_dashboard
@@ -15,6 +15,10 @@ global {
 	float sheep_first_step <- 0.0;
 	/* Cow first step: mean distance of the cows in the first time step (m), recorded at cycle 1. */
 	float cow_first_step <- 0.0;
+	/* Sheep in the south: number of sheep within one step of the bottom edge, updated every step. */
+	int sheep_in_south <- 0 update: sheep count (each.location.y >= shape.height - each.speed);
+	/* Goats at the origin: number of goats closer than 0.01 m to {0, 0}, updated every step. */
+	int goats_at_origin <- 0 update: goat count (each.location distance_to {0, 0} < 0.01);
 	/* Init: runs once at the start and creates 5 cows, 3 sheep and 2 goats. */
 	init {
 		create cow number: 5;
@@ -74,8 +78,8 @@ species sheep skills: [moving] {
 	/* Total distance: metres travelled since the start, the sum of all step lengths. */
 	float total_distance <- 0.0;
 
-	/* Reflex walk: moves one step along its heading at its speed, then adds the length of this step to total_distance. */
-	reflex walk {
+	/* Reflex walk: moves one step along its heading at its speed, then adds the length of this step to total_distance. It only walks while there is room for a full step, so it stops in the south instead of bouncing back. */
+	reflex walk when: location.y < world.shape.height - speed {
 		point old_location <- location;
 		do move;
 		total_distance <- total_distance + (old_location distance_to location);
@@ -130,7 +134,8 @@ species goat skills: [moving] {
 /* GUI experiment: will show one map display with all agents and their action neighbourhoods. */
 experiment main type: gui {
 	output {
-		/* Map display: light green field, the action areas first, the cows on top. */
+		layout #split;
+		/* Map display: light green field, the action areas first, the animals on top. */
 		display map background: #lightgreen {
 			species cow aspect: area transparency: 0.5;
 			species cow aspect: default;
@@ -139,5 +144,7 @@ experiment main type: gui {
 			species goat aspect: area transparency: 0.5;
 			species goat aspect: default;
 		}
+		monitor "Sheep in the south (of 3)" value: sheep_in_south;
+		monitor "Goats at the origin (of 2)" value: goats_at_origin;
 	}
 }
