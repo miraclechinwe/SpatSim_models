@@ -11,3 +11,5 @@ Files are named by assignment number.
   The design (`DESIGN.md`) and prompt log (`PROMPT_LOG.md`) are in `docs/assignment3/`.
 - **Assignment 4** – `models/assignment4_movement.gaml`: cows (correlated random walk), sheep (move south) and goats (goto origin) with their action neighbourhoods.
   The design (`Design.md`) and prompt log (`PROMPT_LOG.md`) are in `docs/assignment4/`.
+- **Assignment 5** – `models/assignment5_dashboard.gaml`: verification dashboard for the Assignment 4 model (monitors, goat distance time series, first-step scatterplot, cow turn histogram; saves CSVs and pauses at the end).
+  The design (`DESIGN.md`), prompt log (`PROMPT_LOG.md`) and saved results (`summary.csv`, `cow_turns.csv`) are in `docs/assignment5/`.
