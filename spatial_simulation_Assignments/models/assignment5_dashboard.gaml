@@ -1,6 +1,6 @@
 /**
 * Name: assignment5_dashboard
-* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.4: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global, sheep stop in the south, monitors for sheep in the south and goats at the origin.
+* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.5: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global, sheep stop in the south, monitors for sheep in the south and goats at the origin, time series of the goats' mean total distance.
 */
 
 model assignment5_dashboard
@@ -146,5 +146,11 @@ experiment main type: gui {
 		}
 		monitor "Sheep in the south (of 3)" value: sheep_in_south;
 		monitor "Goats at the origin (of 2)" value: goats_at_origin;
+		/* Goat distance display: time series of the mean total distance travelled by the goats. */
+		display goat_distance {
+			chart "Mean total distance of the goats" type: series x_label: "cycle" y_label: "m" {
+				data "goats" value: mean(goat collect each.total_distance) color: #orange;
+			}
+		}
 	}
 }
