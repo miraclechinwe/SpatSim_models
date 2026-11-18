@@ -1,141 +1,124 @@
 /**
 * Name: assignment5_dashboard
-* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.6: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global, sheep stop in the south, monitors for sheep in the south and goats at the origin, time series of the goats' mean total distance, scatterplot of the first step and histogram of the cow direction changes.
+* Assignment 5 - Verification dashboard for the "On the move" model (based on Assignment 4, v2.3)
+* Version 1.8
+*
+* Animals:   5 cows (correlated random walk), 3 sheep (walk south), 2 goats (go to the origin)
+* Dashboard: 2 monitors, goat distance chart, first-step scatterplot, cow turn histogram
+* End:       when all sheep are in the south and all goats at the origin -> save data, pause
 */
 
 model assignment5_dashboard
 
-/* Global section: will create the cows, sheep and goats in init. */
 global {
-	/* Shape: the world is a 30 x 30 m field. */
-	geometry shape <- square(30);
-	/* Cow turns: every direction change of every cow (degrees, -180 to +180), 5 new values each step. */
-	list<float> cow_turns <- [];
-	/* Sheep first step: mean distance of the sheep in the first time step (m), recorded at cycle 1. */
-	float sheep_first_step <- 0.0;
-	/* Cow first step: mean distance of the cows in the first time step (m), recorded at cycle 1. */
-	float cow_first_step <- 0.0;
-	/* Sheep in the south: number of sheep within one step of the bottom edge, updated every step. */
+	// ================= WORLD =================
+	geometry shape <- square(30);                         // 30 x 30 m field
+
+	// ================= DATA FOR THE CHARTS =================
+	list<float> cow_turns <- [];                          // every cow direction change (degrees), grows every step
+	float sheep_first_step <- 0.0;                        // mean sheep distance in step 1 (scatterplot x)
+	float cow_first_step <- 0.0;                          // mean cow distance in step 1 (scatterplot y)
+	list<string> bin_labels <- range(0, 71) collect string(-180 + 5 * each);   // histogram labels: -180, -175 ... 175
+
+	// ================= MONITORS (recalculated every step) =================
 	int sheep_in_south <- 0 update: sheep count (each.location.y >= shape.height - each.speed);
-	/* Goats at the origin: number of goats closer than 0.01 m to {0, 0}, updated every step. */
 	int goats_at_origin <- 0 update: goat count (each.location distance_to {0, 0} < 0.01);
-	/* Init: runs once at the start and creates 5 cows, 3 sheep and 2 goats. */
+
+	// ================= START =================
 	init {
 		create cow number: 5;
 		create sheep number: 3;
 		create goat number: 2;
 	}
-	/* Reflex record_first_step: at cycle 1 every animal has moved once, so its total_distance is its first step. */
+
+	// ================= EVERY STEP =================
+	// After the first step (cycle 1) each animal's total_distance = its first-step distance.
 	reflex record_first_step when: cycle = 1 {
 		sheep_first_step <- mean(sheep collect each.total_distance);
 		cow_first_step <- mean(cow collect each.total_distance);
 	}
+
+	// End: all sheep in the south and all goats at the origin -> save the data and pause.
+	reflex save_and_stop when: sheep_in_south = length(sheep) and goats_at_origin = length(goat) {
+		save [cycle, mean(goat collect each.total_distance), sheep_first_step, cow_first_step,
+			length(cow_turns), min(cow_turns), max(cow_turns)]
+			to: "../docs/assignment5/summary.csv" format: "csv" rewrite: true;
+		save cow_turns to: "../docs/assignment5/cow_turns.csv" format: "csv" rewrite: true;
+		do pause;
+	}
 }
 
-/* Cow species: does a correlated random walk with wander and shows its action area. */
+// ================= COWS: correlated random walk (wander) =================
 species cow skills: [moving] {
-	/* Speed: 2 m per step, used by wander and as the radius of the action area. */
-	float speed <- 2.0;
-	/* Action area: where the cow can be in the next step. */
-	geometry action_area;
-	/* Total distance: metres travelled since the start, the sum of all step lengths. */
-	float total_distance <- 0.0;
+	float speed <- 2.0;                 // 2 m per step
+	float total_distance <- 0.0;        // pedometer: metres walked since the start
+	geometry action_area;               // where the cow can be in the next step
 
-	/* Reflex walk: wanders at its speed, turning at most 90 degrees from its heading, then adds the length of this step to total_distance and the turn to cow_turns. */
 	reflex walk {
 		point old_location <- location;
 		float old_heading <- heading;
-		do wander amplitude: 90.0 speed: speed;
+		do wander amplitude: 90.0 speed: speed;                          // turn at most 45 deg left or right
 		total_distance <- total_distance + (old_location distance_to location);
 		float turn <- heading - old_heading;
-		turn <- turn - 360 * round(turn / 360); // wrap to -180..+180
-		add turn to: cow_turns;
+		add turn - 360 * round(turn / 360) to: cow_turns;                // wrap to -180..+180 (e.g. -340 -> +20)
 	}
-	/* Reflex update_area: after walk, the 90 degree slice of circle(speed) around the heading. */
-	reflex update_area {
+
+	reflex update_area {               // slice of a circle: radius = speed, +-45 deg around the heading
 		action_area <- circle(speed) intersection cone(int(heading - 45), int(heading + 45));
 	}
-	/* Aspect default: the cow as a small brown filled circle. */
-	aspect default {
-		draw circle(0.5) color: rgb(120, 70, 30);
-	}
-	/* Aspect area: the action area in goldenrod, only once it exists. */
-	aspect area {
-		if (action_area != nil) {
-			draw action_area color: #goldenrod;
-		}
-	}
+
+	aspect default { draw circle(0.5) color: rgb(120, 70, 30); }
+	aspect area { if (action_area != nil) { draw action_area color: #goldenrod; } }
 }
 
-/* Sheep species: walks south with move and shows a line one step ahead. */
+// ================= SHEEP: walk south (move) =================
 species sheep skills: [moving] {
-	/* Speed: 1 m per step, also the length of the action area line. */
-	float speed <- 1.0;
-	/* Heading: 90 degrees, which is south (east = 0). */
-	float heading <- 90.0;
-	/* Action area: where the sheep can be in the next step. */
-	geometry action_area;
-	/* Total distance: metres travelled since the start, the sum of all step lengths. */
+	float speed <- 1.0;                 // 1 m per step
+	float heading <- 90.0;              // south (east = 0, clockwise)
 	float total_distance <- 0.0;
+	geometry action_area;
 
-	/* Reflex walk: moves one step along its heading at its speed, then adds the length of this step to total_distance. It only walks while there is room for a full step, so it stops in the south instead of bouncing back. */
+	// Walk only while there is room for a full step -> stops in the south (fix: before, sheep bounced back).
 	reflex walk when: location.y < world.shape.height - speed {
 		point old_location <- location;
 		do move;
 		total_distance <- total_distance + (old_location distance_to location);
 	}
-	/* Reflex update_area: after walk, the line from the sheep to one step south. */
-	reflex update_area {
+
+	reflex update_area {               // line one step to the south
 		action_area <- line([location, location + {0, speed}]);
 	}
-	/* Aspect default: the sheep as a small black filled circle. */
-	aspect default {
-		draw circle(0.5) color: #black;
-	}
-	/* Aspect area: the action area line, thickened by 0.3 m, in goldenrod. */
-	aspect area {
-		if (action_area != nil) {
-			draw action_area + 0.3 color: #goldenrod;
-		}
-	}
+
+	aspect default { draw circle(0.5) color: #black; }
+	aspect area { if (action_area != nil) { draw action_area + 0.3 color: #goldenrod; } }   // + 0.3 = thicker line
 }
 
-/* Goat species: walks slowly to the origin with goto and shows its next step on the way. */
+// ================= GOATS: go to the origin (goto) =================
 species goat skills: [moving] {
-	/* Speed: 0.5 m per step, also the radius that cuts the line to the origin. */
-	float speed <- 0.5;
-	/* Action area: where the goat can be in the next step. */
-	geometry action_area;
-	/* Total distance: metres travelled since the start, the sum of all step lengths. */
+	float speed <- 0.5;                 // 0.5 m per step
 	float total_distance <- 0.0;
+	geometry action_area;
 
-	/* Reflex walk: moves at its speed straight towards the origin {0, 0}, then adds the length of this step to total_distance. */
 	reflex walk {
 		point old_location <- location;
 		do goto target: {0, 0} speed: speed;
 		total_distance <- total_distance + (old_location distance_to location);
 	}
-	/* Reflex update_area: after walk, the part of the line to the origin within one step. */
-	reflex update_area {
+
+	reflex update_area {               // line to the origin, cut to one step by a circle of the speed
 		action_area <- line([location, {0, 0}]) intersection circle(speed);
 	}
-	/* Aspect default: the goat as a small yellow filled circle. */
-	aspect default {
-		draw circle(0.5) color: #yellow;
-	}
-	/* Aspect area: the action area line, thickened by 0.3 m, in goldenrod. */
-	aspect area {
-		if (action_area != nil) {
-			draw action_area + 0.3 color: #goldenrod;
-		}
-	}
+
+	aspect default { draw circle(0.5) color: #yellow; }
+	aspect area { if (action_area != nil) { draw action_area + 0.3 color: #goldenrod; } }
 }
 
-/* GUI experiment: will show one map display with all agents and their action neighbourhoods. */
+// ================= DASHBOARD =================
 experiment main type: gui {
 	output {
-		layout #split;
-		/* Map display: light green field, the action areas first, the animals on top. */
+		layout #split;                                            // all windows side by side
+
+		// Map: action areas first (half transparent), animals on top
 		display map background: #lightgreen {
 			species cow aspect: area transparency: 0.5;
 			species cow aspect: default;
@@ -144,23 +127,36 @@ experiment main type: gui {
 			species goat aspect: area transparency: 0.5;
 			species goat aspect: default;
 		}
+
+		// Monitors: live checks of the end condition
 		monitor "Sheep in the south (of 3)" value: sheep_in_south;
 		monitor "Goats at the origin (of 2)" value: goats_at_origin;
-		/* Goat distance display: time series of the mean total distance travelled by the goats. */
-		display goat_distance {
-			chart "Mean total distance of the goats" type: series x_label: "cycle" y_label: "m" {
-				data "goats" value: mean(goat collect each.total_distance) color: #orange;
+
+		// Time series: mean total distance of the goats
+		display goat_distance background: #white {
+			chart "Goats: mean total distance travelled" type: series
+				x_label: "Time (steps)" y_label: "Distance (m)" y_range: {0, 40} series_label_position: none {
+				data "goats" value: mean(goat collect each.total_distance) color: #orange marker: false;
 			}
 		}
-		display first_step {
-			chart "First step: sheep vs cows" type: scatter x_label: "Mean distance of sheep (m)" y_label: "Mean distance of cows (m)" {
-				data "first step" value: {sheep_first_step, cow_first_step} color: #black;
+
+		// Scatterplot: first step, sheep (x) vs cows (y) - one point only
+		display first_step background: #white {
+			chart "First step: sheep vs cows" type: scatter
+				x_label: "Mean distance of sheep (m)" y_label: "Mean distance of cows (m)"
+				x_range: {0, 2.5} y_range: {0, 2.5} x_tick_unit: 0.5 y_tick_unit: 0.5 series_label_position: none {
+				data "first step" value: {sheep_first_step, cow_first_step} color: #black
+					accumulate_values: false line_visible: false;
 			}
 		}
-		display cow_turn_histogram {
-			chart "Cows: direction changes (5 degree bins)" type: histogram x_label: "Direction change (degrees)" y_label: "Count" {
-				datalist (distribution_of(cow_turns, 72, -180, 180) at "legend")
-					value: (distribution_of(cow_turns, 72, -180, 180) at "values");
+
+		// Histogram: all cow direction changes, 72 bins of 5 degrees from -180 to +180
+		display cow_turn_histogram background: #white {
+			chart "Cows: direction changes (5 degree bins)" type: histogram
+				x_label: "Direction change (degrees)" y_label: "Count"
+				series_label_position: none tick_font: font("Arial", 7, #plain) {
+				datalist bin_labels value: (distribution_of(cow_turns, 72, -180, 180) at "values")
+					color: list_with(72, #sienna);
 			}
 		}
 	}
