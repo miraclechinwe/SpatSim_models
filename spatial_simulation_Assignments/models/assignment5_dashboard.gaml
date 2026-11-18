@@ -1,6 +1,6 @@
 /**
 * Name: assignment5_dashboard
-* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.5: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global, sheep stop in the south, monitors for sheep in the south and goats at the origin, time series of the goats' mean total distance.
+* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.6: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global, sheep stop in the south, monitors for sheep in the south and goats at the origin, time series of the goats' mean total distance, scatterplot of the first step and histogram of the cow direction changes.
 */
 
 model assignment5_dashboard
@@ -150,6 +150,17 @@ experiment main type: gui {
 		display goat_distance {
 			chart "Mean total distance of the goats" type: series x_label: "cycle" y_label: "m" {
 				data "goats" value: mean(goat collect each.total_distance) color: #orange;
+			}
+		}
+		display first_step {
+			chart "First step: sheep vs cows" type: scatter x_label: "Mean distance of sheep (m)" y_label: "Mean distance of cows (m)" {
+				data "first step" value: {sheep_first_step, cow_first_step} color: #black;
+			}
+		}
+		display cow_turn_histogram {
+			chart "Cows: direction changes (5 degree bins)" type: histogram x_label: "Direction change (degrees)" y_label: "Count" {
+				datalist (distribution_of(cow_turns, 72, -180, 180) at "legend")
+					value: (distribution_of(cow_turns, 72, -180, 180) at "values");
 			}
 		}
 	}
