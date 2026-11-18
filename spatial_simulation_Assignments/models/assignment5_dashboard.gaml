@@ -1,6 +1,6 @@
 /**
 * Name: assignment5_dashboard
-* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.2: total_distance for every animal, cow_turns in the global.
+* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.3: total_distance for every animal, cow_turns, sheep_first_step and cow_first_step in the global.
 */
 
 model assignment5_dashboard
@@ -11,11 +11,20 @@ global {
 	geometry shape <- square(30);
 	/* Cow turns: every direction change of every cow (degrees, -180 to +180), 5 new values each step. */
 	list<float> cow_turns <- [];
+	/* Sheep first step: mean distance of the sheep in the first time step (m), recorded at cycle 1. */
+	float sheep_first_step <- 0.0;
+	/* Cow first step: mean distance of the cows in the first time step (m), recorded at cycle 1. */
+	float cow_first_step <- 0.0;
 	/* Init: runs once at the start and creates 5 cows, 3 sheep and 2 goats. */
 	init {
 		create cow number: 5;
 		create sheep number: 3;
 		create goat number: 2;
+	}
+	/* Reflex record_first_step: at cycle 1 every animal has moved once, so its total_distance is its first step. */
+	reflex record_first_step when: cycle = 1 {
+		sheep_first_step <- mean(sheep collect each.total_distance);
+		cow_first_step <- mean(cow collect each.total_distance);
 	}
 }
 
