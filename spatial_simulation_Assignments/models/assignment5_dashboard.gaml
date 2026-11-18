@@ -1,6 +1,6 @@
 /**
 * Name: assignment5_dashboard
-* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.1: total_distance for every animal.
+* Assignment 5: verification dashboard for the On the move model (copy of Assignment 4 v2.3). Version 1.2: total_distance for every animal, cow_turns in the global.
 */
 
 model assignment5_dashboard
@@ -9,6 +9,8 @@ model assignment5_dashboard
 global {
 	/* Shape: the world is a 30 x 30 m field. */
 	geometry shape <- square(30);
+	/* Cow turns: every direction change of every cow (degrees, -180 to +180), 5 new values each step. */
+	list<float> cow_turns <- [];
 	/* Init: runs once at the start and creates 5 cows, 3 sheep and 2 goats. */
 	init {
 		create cow number: 5;
@@ -26,11 +28,15 @@ species cow skills: [moving] {
 	/* Total distance: metres travelled since the start, the sum of all step lengths. */
 	float total_distance <- 0.0;
 
-	/* Reflex walk: wanders at its speed, turning at most 90 degrees from its heading, then adds the length of this step to total_distance. */
+	/* Reflex walk: wanders at its speed, turning at most 90 degrees from its heading, then adds the length of this step to total_distance and the turn to cow_turns. */
 	reflex walk {
 		point old_location <- location;
+		float old_heading <- heading;
 		do wander amplitude: 90.0 speed: speed;
 		total_distance <- total_distance + (old_location distance_to location);
+		float turn <- heading - old_heading;
+		turn <- turn - 360 * round(turn / 360); // wrap to -180..+180
+		add turn to: cow_turns;
 	}
 	/* Reflex update_area: after walk, the 90 degree slice of circle(speed) around the heading. */
 	reflex update_area {
